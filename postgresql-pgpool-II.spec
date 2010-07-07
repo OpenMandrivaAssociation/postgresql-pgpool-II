@@ -23,6 +23,7 @@ Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
 Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
+Requires:	postgresql-server
 Obsoletes:	pgpool
 
 %description
