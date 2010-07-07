@@ -83,7 +83,7 @@ rm -rf %{buildroot}
 %makeinstall_std
 install -d %{buildroot}%{_localstatedir}/run/pgpool
 
-for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*.sample; do mv $i `echo $i |sed -e 's#\.sample##g'`; done
+for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*; do mv $i `echo $i |sed -e 's#sample-##g' -e 's#\.sample##g'`; done
 
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
 install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
