@@ -25,6 +25,10 @@ Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
 Requires:	postgresql-server
+# This only being unversioned obsoletes only is fully intended as it's
+# not meant to be an automatic, unvoluntarily upgrade of pgpool, but
+# meant to replace it if user explicitly chooses to install the package
+# it self.. So matching provides are excluded with intent as well.
 Obsoletes:	pgpool
 
 %description
