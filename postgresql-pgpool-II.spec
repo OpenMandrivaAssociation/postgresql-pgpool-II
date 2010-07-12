@@ -83,6 +83,17 @@ rm -rf %{buildroot}
 %makeinstall_std
 install -d %{buildroot}%{_localstatedir}/run/pgpool
 
+install -d %{buildroot}/var/log/postgres
+
+install -d %{buildroot}%{_sysconfdir}/logrotate.d
+tee %{buildroot}/%{_sysconfdir}/logrotate.d/pgpool <<EOH
+/var/log/postgres/pgpool {
+    notifempty
+    missingok
+    copytruncate
+}
+EOH
+
 for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*; do mv $i `echo $i |sed -e 's#sample-##g' -e 's#\.sample##g'`; done
 
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
@@ -121,6 +132,7 @@ rm -rf %{buildroot}
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
+%config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
 
 %files -n %{libname}
 %defattr(-,root,root)
