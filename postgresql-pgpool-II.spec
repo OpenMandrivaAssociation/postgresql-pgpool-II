@@ -8,7 +8,7 @@ Name:		postgresql-%{short_name}
 Version:	2.3.3
 Release:	%mkrel 1
 License:	BSD
-Group:		Applications/Databases
+Group:		Databases
 URL:		http://pgpool.projects.PostgreSQL.org
 Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
 Source1:	pgpool.init
