@@ -67,6 +67,7 @@ Development headers and libraries for pgpool-II.
 
 %prep
 %setup -q -n %{short_name}-%{version}
+iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch0 -p1 -b .str_fmt~
 %patch1 -p1 -b .conf~
 %patch2 -p1 -b .stdout_log~
