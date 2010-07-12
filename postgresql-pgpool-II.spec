@@ -58,7 +58,7 @@ Library for pgpool-II.
 
 %package -n	%{devname}
 Summary:	Development headers for pgpool-II
-Group:		Development/Libraries
+Group:		Development/C
 Provides:	%{name}-devel = %{version}-%{release}
 Requires:	%{libname} = %{version}-%{release}
 
