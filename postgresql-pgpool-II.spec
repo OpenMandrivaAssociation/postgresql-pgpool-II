@@ -103,7 +103,7 @@ install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
 %clean
 rm -rf %{buildroot}
 
-%post
+%posttrans
 %_post_service pgpool
 
 %preun
