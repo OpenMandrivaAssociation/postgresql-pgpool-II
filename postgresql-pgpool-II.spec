@@ -21,6 +21,7 @@ Patch0:		pgpool-II-2.3.3-string-format-fixes.patch
 Patch1:		pgpool-II-2.3.3-pgpool.conf.patch
 Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
 Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
+Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
 Requires:	postgresql-server
