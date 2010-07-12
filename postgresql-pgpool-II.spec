@@ -11,10 +11,10 @@ License:	BSD
 Group:		Applications/Databases
 URL:		http://pgpool.projects.PostgreSQL.org
 Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
-Source1:        pgpool.init
-Source2:        pgpool.sysconfig
+Source1:	pgpool.init
+Source2:	pgpool.sysconfig
 # (proyvind):	These are all patches of mine, briefly described in changelog for
-# 		2.3.3-1, eventually they should preferably make their way in some
+#		2.3.3-1, eventually they should preferably make their way in some
 #		form or another when I, or someone else who feels like it gets
 #		around to it.. ;)
 Patch0:		pgpool-II-2.3.3-string-format-fixes.patch
