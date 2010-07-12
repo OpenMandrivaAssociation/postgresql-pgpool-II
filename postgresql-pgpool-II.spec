@@ -24,7 +24,7 @@ Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
-Requires:	postgresql-server
+Requires:	postgresql-server postgresql-contrib-virtual
 # This only being unversioned obsoletes only is fully intended as it's
 # not meant to be an automatic, unvoluntarily upgrade of pgpool, but
 # meant to replace it if user explicitly chooses to install the package
