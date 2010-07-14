@@ -6,11 +6,13 @@
 Summary:	Pgpool is a connection pooling/replication server for PostgreSQL
 Name:		postgresql-%{short_name}
 Version:	2.3.3
-Release:	%mkrel 1
+Release:	%mkrel 1.cvs20100714.1
 License:	BSD
 Group:		Databases
 URL:		http://pgpool.projects.PostgreSQL.org
-Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
+# snapshot generated from latest from V_2_3_STABLE branch in cvs:
+# cvs -d :pserver:anonymous@cvs.pgfoundry.org:/cvsroot/pgpool co -r V2_3_STABLE  pgpool-II
+Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.xz
 Source1:	pgpool.init
 Source2:	pgpool.sysconfig
 Source3:	pgpool.conf.mirroring
@@ -28,7 +30,6 @@ Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
 # <jbj> ... usleep is just a bandaid because you don't know who long to wait. using pipe(2) to strictly force the parent <-> child ordering is the better fix.
 # <jbj> but the usleep will "work" almost always.
 Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
-Patch4:		pgpool-II-2.3.3-fix-ssl-hang.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
@@ -81,7 +82,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch1 -p1 -b .conf~
 %patch2 -p1 -b .stdout_log~
 %patch3 -p1 -b .verify_child_pid~
-%patch4 -p1 -b .ssl_hang~
+libtoolize -fi
 
 %build
 %configure2_5x	--with-pgsql-includedir=%{_includedir}/pgsql \
