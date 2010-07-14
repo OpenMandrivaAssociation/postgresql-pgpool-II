@@ -21,6 +21,12 @@ Source3:	pgpool.conf.mirroring
 Patch0:		pgpool-II-2.3.3-string-format-fixes.patch
 Patch1:		pgpool-II-2.3.3-pgpool.conf.patch
 Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
+# there's a slight/minimal chance for a race condition through use of waitpid(2),
+# TODO:
+# <jbj> the easiest fix is to create a pipe to serialize the operation of parent <-> child
+# <jbj> whoever runs 1st closes the pipe fd, whoever runs last blocks on the read and the close causes a 0b read (aka EOF)
+# <jbj> ... usleep is just a bandaid because you don't know who long to wait. using pipe(2) to strictly force the parent <-> child ordering is the better fix.
+# <jbj> but the usleep will "work" almost always.
 Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
