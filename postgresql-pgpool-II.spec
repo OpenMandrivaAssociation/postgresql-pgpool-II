@@ -13,6 +13,7 @@ URL:		http://pgpool.projects.PostgreSQL.org
 Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
 Source1:	pgpool.init
 Source2:	pgpool.sysconfig
+Source3:	pgpool.conf.mirroring
 # (proyvind):	These are all patches of mine, briefly described in changelog for
 #		2.3.3-1, eventually they should preferably make their way in some
 #		form or another when I, or someone else who feels like it gets
@@ -102,7 +103,7 @@ tee %{buildroot}/%{_sysconfdir}/logrotate.d/pgpool <<EOH
 EOH
 
 for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*; do mv $i `echo $i |sed -e 's#sample-##g' -e 's#\.sample##g'`; done
-
+install -m644 %{SOURCE3} -D %{buildroot}%{_sysconfdir}/%{short_name}/pgpool.conf.mirroring
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
 install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
 
