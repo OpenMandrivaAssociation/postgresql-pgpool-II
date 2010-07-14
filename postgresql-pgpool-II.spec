@@ -82,7 +82,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch1 -p1 -b .conf~
 %patch2 -p1 -b .stdout_log~
 %patch3 -p1 -b .verify_child_pid~
-libtoolize -fi
+autoreconf -fi
 
 %build
 %configure2_5x	--with-pgsql-includedir=%{_includedir}/pgsql \
