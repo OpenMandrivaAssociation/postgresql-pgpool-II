@@ -94,10 +94,13 @@ autoreconf -fi
 		--sysconfdir=%{_sysconfdir}/%{short_name}
 
 %make
+%make -C sql/pgpool-recovery
 
 %install
 rm -rf %{buildroot}
 %makeinstall_std
+%makeinstall_std -C sql/pgpool-recovery
+
 install -d %{buildroot}%{_localstatedir}/run/pgpool
 
 install -d %{buildroot}/var/log/postgres
@@ -145,7 +148,9 @@ rm -rf %{buildroot}
 %dir %{_datadir}/%{short_name}
 %{_datadir}/%{short_name}/system_db.sql
 %{_datadir}/%{short_name}/pgpool.pam
+%{_datadir}/postgresql/contrib/pgpool-recovery.sql
 %{_initrddir}/pgpool
+%{_libdir}/postgresql/pgpool-recovery.so
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
