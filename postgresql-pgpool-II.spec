@@ -86,7 +86,7 @@ autoreconf -fi
 
 %build
 %configure2_5x	--with-pgsql-includedir=%{_includedir}/pgsql \
-		--with-pgsql-lib=%{_libdir}/pgsql \
+		--with-pgsql-libdir=%{_libdir}/pgsql \
 		--disable-static \
 		--with-pam \
 		--with-openssl \
