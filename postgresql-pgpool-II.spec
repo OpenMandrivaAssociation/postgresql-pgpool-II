@@ -16,6 +16,7 @@ Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar
 Source1:	pgpool.init
 Source2:	pgpool.sysconfig
 Source3:	pgpool.conf.mirroring
+Source4:	pgpool-copy-base-backup
 # (proyvind):	These are all patches of mine, briefly described in changelog for
 #		2.3.3-1, eventually they should preferably make their way in some
 #		form or another when I, or someone else who feels like it gets
@@ -121,6 +122,11 @@ for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*; do mv $i `echo $i |
 install -m644 %{SOURCE3} -D %{buildroot}%{_sysconfdir}/%{short_name}/pgpool.conf.mirroring
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
 install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
+sed -e 's#/usr/local#/usr#g' -i sample/*
+install -m755 sample/pgpool_* %{buildroot}%{_datadir}/%{short_name}
+install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
+install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
+install -m755 %{SOURCE4} -D %{buildroot}%{_datadir}/%{short_name}/copy-base-backup
 
 %clean
 rm -rf %{buildroot}
@@ -149,11 +155,19 @@ rm -rf %{buildroot}
 %{_bindir}/pg_md5
 %{_mandir}/man8/pgpool.8*
 %dir %{_datadir}/%{short_name}
+%{_datadir}/%{short_name}/copy-base-backup
 %{_datadir}/%{short_name}/system_db.sql
 %{_datadir}/%{short_name}/pgpool.pam
+%{_datadir}/%{short_name}/pgpool_recovery_pitr
+%{_datadir}/%{short_name}/dist_def_pgbench.sql
+%{_datadir}/%{short_name}/pgpool_recovery
+%{_datadir}/%{short_name}/pgpool_remote_start
+%{_datadir}/%{short_name}/replicate_def_pgbench.sql
 %{_datadir}/postgresql/contrib/pgpool-recovery.sql
 %{_initrddir}/pgpool
 %{_libdir}/postgresql/pgpool-recovery.so
+%ghost %attr(644,postgres,postgres) %{_localstatedir}/pgsql/data/recovery.conf
+%ghost %attr(644,postgres,postgres) %{_localstatedir}/pgsql/data/recovery.done
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
