@@ -127,6 +127,8 @@ install -m755 sample/pgpool_* %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m755 %{SOURCE4} -D %{buildroot}%{_datadir}/%{short_name}/copy-base-backup
+install -d %{buildroot}%{_localstatedir}/pgsql/data
+touch %{buildroot}%{_localstatedir}/pgsql/data/recovery.{conf,done}
 
 %clean
 rm -rf %{buildroot}
