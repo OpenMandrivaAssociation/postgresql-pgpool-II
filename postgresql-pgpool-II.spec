@@ -118,7 +118,9 @@ tee %{buildroot}/%{_sysconfdir}/logrotate.d/pgpool <<EOH
 }
 EOH
 
-for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*; do mv $i `echo $i |sed -e 's#sample-##g' -e 's#\.sample##g'`; done
+for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*
+	do mv $i `echo $i |sed -e 's#sample-##g' -e 's#\.sample##g'`
+done
 install -m644 %{SOURCE3} -D %{buildroot}%{_sysconfdir}/%{short_name}/pgpool.conf.mirroring
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
 install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
@@ -129,6 +131,9 @@ install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_n
 install -m755 %{SOURCE4} -D %{buildroot}%{_datadir}/%{short_name}/copy-base-backup
 install -d %{buildroot}%{_localstatedir}/pgsql/data
 touch %{buildroot}%{_localstatedir}/pgsql/data/recovery.{conf,done}
+for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr
+	do ln -s $i %{buildroot}%{_localstatedir}/pgsql/data/$i
+done
 
 %clean
 rm -rf %{buildroot}
@@ -171,6 +176,9 @@ rm -rf %{buildroot}
 %ghost %attr(644,postgres,postgres) %{_localstatedir}/pgsql/data/recovery.conf
 %ghost %attr(644,postgres,postgres) %{_localstatedir}/pgsql/data/recovery.done
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
+%{_localstatedir}/pgsql/data/copy-base-backup
+%{_localstatedir}/pgsql/data/pgpool_recovery
+%{_localstatedir}/pgsql/data/pgpool_recovery_pitr
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
