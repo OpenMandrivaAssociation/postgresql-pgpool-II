@@ -32,6 +32,7 @@ Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
 # <jbj> but the usleep will "work" almost always.
 Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
 Patch4:		pgpool-II-2.3.3-support-libsetproctitle.patch
+Patch5:		pgpool-II-2.3.3-remote_start-expand-base-backup-for-pitr.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
@@ -86,6 +87,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch2 -p1 -b .stdout_log~
 %patch3 -p1 -b .verify_child_pid~
 %patch4 -p1 -b .setproctitle~
+%patch5 -p1 -b .pitr~
 autoreconf -fi
 
 %build
