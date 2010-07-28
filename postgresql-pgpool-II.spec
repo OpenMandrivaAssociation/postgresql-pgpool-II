@@ -89,6 +89,8 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch4 -p1 -b .setproctitle~
 %patch5 -p1 -b .pitr~
 autoreconf -fi
+cp %{SOURCE4} sample/copy-base-backup
+
 
 %build
 %configure2_5x	--with-pgsql-includedir=%{_includedir}/pgsql \
@@ -127,14 +129,13 @@ install -m644 %{SOURCE3} -D %{buildroot}%{_sysconfdir}/%{short_name}/pgpool.conf
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
 install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
 sed -e 's#/usr/local#/usr#g' -i sample/*
-install -m755 sample/pgpool_* %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
-install -m755 %{SOURCE4} -D %{buildroot}%{_datadir}/%{short_name}/copy-base-backup
 install -d %{buildroot}%{_localstatedir}/pgsql/data
 touch %{buildroot}%{_localstatedir}/pgsql/data/recovery.{conf,done}
-for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr
-	do ln -s $i %{buildroot}%{_localstatedir}/pgsql/data/$i
+for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
+	install -m755 sample/$i %{buildroot}%{_datadir}/%{short_name}/$i
+	ln -s $i %{buildroot}%{_localstatedir}/pgsql/data/$i
 done
 
 %clean
@@ -181,6 +182,7 @@ rm -rf %{buildroot}
 %{_localstatedir}/pgsql/data/copy-base-backup
 %{_localstatedir}/pgsql/data/pgpool_recovery
 %{_localstatedir}/pgsql/data/pgpool_recovery_pitr
+%{_localstatedir}/pgsql/data/pgpool_remote_start
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
