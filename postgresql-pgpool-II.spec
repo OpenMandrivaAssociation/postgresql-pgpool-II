@@ -181,10 +181,10 @@ rm -rf %{buildroot}
 %ghost %attr(644,postgres,postgres) %{pgsqld}/recovery.conf
 %ghost %attr(644,postgres,postgres) %{pgsqld}/recovery.done
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
-%{pgsqld}/copy-base-backup
-%{pgsqld}/pgpool_recovery
-%{pgsqld}/pgpool_recovery_pitr
-%{pgsqld}/pgpool_remote_start
+%ghost %{pgsqld}/copy-base-backup
+%ghost %{pgsqld}/pgpool_recovery
+%ghost %{pgsqld}/pgpool_recovery_pitr
+%ghost %{pgsqld}/pgpool_remote_start
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
