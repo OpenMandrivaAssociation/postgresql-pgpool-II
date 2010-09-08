@@ -3,8 +3,6 @@
 %define	libname	%mklibname pcp %{major}
 %define	devname	%mklibname pcp -d
 
-%define	pgsqld	%{_localstatedir}/lib/pgsql/data
-
 Summary:	Pgpool is a connection pooling/replication server for PostgreSQL
 Name:		postgresql-%{short_name}
 Version:	2.3.3
@@ -133,12 +131,6 @@ install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
 sed -e 's#/usr/local#/usr#g' -i sample/*
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
-install -d %{buildroot}%{pgsqld}
-touch %{buildroot}%{pgsqld}/recovery.{conf,done}
-for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
-	install -m755 sample/$i %{buildroot}%{_datadir}/%{short_name}/$i
-	ln -s %{_datadir}/%{short_name}/$i %{buildroot}%{pgsqld}/$i
-done
 
 %clean
 rm -rf %{buildroot}
@@ -178,13 +170,7 @@ rm -rf %{buildroot}
 %{_datadir}/postgresql/contrib/pgpool-recovery.sql
 %{_initrddir}/pgpool
 %{_libdir}/postgresql/pgpool-recovery.so
-%ghost %attr(644,postgres,postgres) %{pgsqld}/recovery.conf
-%ghost %attr(644,postgres,postgres) %{pgsqld}/recovery.done
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
-%ghost %attr(-,postgres,postgres) %{pgsqld}/copy-base-backup
-%ghost %attr(-,postgres,postgres) %{pgsqld}/pgpool_recovery
-%ghost %attr(-,postgres,postgres) %{pgsqld}/pgpool_recovery_pitr
-%ghost %attr(-,postgres,postgres) %{pgsqld}/pgpool_remote_start
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
