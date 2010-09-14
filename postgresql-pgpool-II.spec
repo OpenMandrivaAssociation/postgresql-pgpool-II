@@ -132,6 +132,10 @@ sed -e 's#/usr/local#/usr#g' -i sample/*
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 
+for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
+	install -m755 sample/$i %{buildroot}%{_datadir}/%{short_name}/$i
+done
+
 %clean
 rm -rf %{buildroot}
 
