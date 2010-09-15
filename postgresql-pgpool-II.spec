@@ -19,7 +19,6 @@ Source4:	pgpool-copy-base-backup
 #		2.3.3-1, eventually they should preferably make their way in some
 #		form or another when I, or someone else who feels like it gets
 #		around to it.. ;)
-Patch0:		pgpool-II-2.3.3-string-format-fixes.patch
 Patch1:		pgpool-II-3.0-pgpool.conf-mdkconf.patch
 Patch2:		pgpool-II-3.0-daemon-stdout-stderr-logging.patch
 # there's a slight/minimal chance for a race condition through use of waitpid(2),
@@ -30,7 +29,7 @@ Patch2:		pgpool-II-3.0-daemon-stdout-stderr-logging.patch
 # <jbj> but the usleep will "work" almost always.
 Patch3:		pgpool-II-3.0-verify-child-pid-survival.patch
 Patch4:		pgpool-II-2.3.3-support-libsetproctitle.patch
-Patch5:		pgpool-II-2.3.3-remote_start-expand-base-backup-for-pitr.patch
+Patch5:		pgpool-II-3.0-recovery-script-customizations.patch
 Patch6:		pgpool-3.0-custom-unix-socket-dir.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -81,12 +80,11 @@ Development headers and libraries for pgpool-II.
 %prep
 %setup -q -n %{short_name}-%{version}
 iconv -f iso-8859-1 -t utf-8 TODO -o TODO
-#%%patch0 -p1 -b .str_fmt~
 %patch1 -p1 -b .mdkconf~
 %patch2 -p1 -b .stdout_log~
 %patch3 -p1 -b .verify_child_pid~
 %patch4 -p1 -b .setproctitle~
-%patch5 -p1 -b .pitr~
+%patch5 -p1 -b .recovery~
 %patch6 -p1 -b .socketdir~
 autoreconf -fi
 cp %{SOURCE4} sample/copy-base-backup
