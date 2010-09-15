@@ -35,7 +35,7 @@ Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
 BuildRequires:	setproctitle-devel
-Requires:	postgresql-server postgresql-contrib-virtual
+Suggests:	postgresql-server postgresql-contrib-virtual
 Provides:	%{short_name} = %{version}-%{release}
 # This only being unversioned obsoletes only is fully intended as it's
 # not meant to be an automatic, unvoluntarily upgrade of pgpool, but
