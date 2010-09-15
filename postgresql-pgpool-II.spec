@@ -5,14 +5,12 @@
 
 Summary:	Pgpool is a connection pooling/replication server for PostgreSQL
 Name:		postgresql-%{short_name}
-Version:	2.3.3
-Release:	%mkrel 2.cvs20100714.1
+Version:	3.0
+Release:	%mkrel 1
 License:	BSD
 Group:		Databases
 URL:		http://pgpool.projects.PostgreSQL.org
-# snapshot generated from latest from V_2_3_STABLE branch in cvs:
-# cvs -d :pserver:anonymous@cvs.pgfoundry.org:/cvsroot/pgpool co -r V2_3_STABLE  pgpool-II
-Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.xz
+Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
 Source1:	pgpool.init
 Source2:	pgpool.sysconfig
 Source3:	pgpool.conf.mirroring
@@ -22,17 +20,18 @@ Source4:	pgpool-copy-base-backup
 #		form or another when I, or someone else who feels like it gets
 #		around to it.. ;)
 Patch0:		pgpool-II-2.3.3-string-format-fixes.patch
-Patch1:		pgpool-II-2.3.3-pgpool.conf.patch
-Patch2:		pgpool-II-2.3.3-daemon-stdout-stderr-logging.patch
+Patch1:		pgpool-II-3.0-pgpool.conf-mdkconf.patch
+Patch2:		pgpool-II-3.0-daemon-stdout-stderr-logging.patch
 # there's a slight/minimal chance for a race condition through use of waitpid(2),
 # TODO:
 # <jbj> the easiest fix is to create a pipe to serialize the operation of parent <-> child
 # <jbj> whoever runs 1st closes the pipe fd, whoever runs last blocks on the read and the close causes a 0b read (aka EOF)
 # <jbj> ... usleep is just a bandaid because you don't know who long to wait. using pipe(2) to strictly force the parent <-> child ordering is the better fix.
 # <jbj> but the usleep will "work" almost always.
-Patch3:		pgpool-II-2.3.3-verify-child-pid-survival.patch
+Patch3:		pgpool-II-3.0-verify-child-pid-survival.patch
 Patch4:		pgpool-II-2.3.3-support-libsetproctitle.patch
 Patch5:		pgpool-II-2.3.3-remote_start-expand-base-backup-for-pitr.patch
+Patch6:		pgpool-3.0-custom-unix-socket-dir.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
@@ -82,12 +81,13 @@ Development headers and libraries for pgpool-II.
 %prep
 %setup -q -n %{short_name}-%{version}
 iconv -f iso-8859-1 -t utf-8 TODO -o TODO
-%patch0 -p1 -b .str_fmt~
-%patch1 -p1 -b .conf~
+#%%patch0 -p1 -b .str_fmt~
+%patch1 -p1 -b .mdkconf~
 %patch2 -p1 -b .stdout_log~
 %patch3 -p1 -b .verify_child_pid~
 %patch4 -p1 -b .setproctitle~
 %patch5 -p1 -b .pitr~
+%patch6 -p1 -b .socketdir~
 autoreconf -fi
 cp %{SOURCE4} sample/copy-base-backup
 
@@ -99,19 +99,20 @@ cp %{SOURCE4} sample/copy-base-backup
 		--with-pam \
 		--with-openssl \
 		--disable-rpath \
-		--sysconfdir=%{_sysconfdir}/%{short_name}
+		--sysconfdir=%{_sysconfdir}/%{short_name} \
+		--with-socket-dir=%{_localstatedir}/run/postgresql
 
 %make
 %make -C sql/pgpool-recovery
+%make -C sql/pgpool-regclass
 
 %install
 rm -rf %{buildroot}
 %makeinstall_std
 %makeinstall_std -C sql/pgpool-recovery
+%makeinstall_std -C sql/pgpool-regclass
 
-install -d %{buildroot}%{_localstatedir}/run/pgpool
-
-install -d %{buildroot}/var/log/postgres
+install -d %{buildroot}%{_localstatedir}/run/{pgpool,postgresql}
 
 install -d %{buildroot}%{_sysconfdir}/logrotate.d
 tee %{buildroot}/%{_sysconfdir}/logrotate.d/pgpool <<EOH
@@ -136,10 +137,13 @@ for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_sta
 	install -m755 sample/$i %{buildroot}%{_datadir}/%{short_name}/$i
 done
 
+touch %{buildroot}%{_sysconfdir}/%{short_name}/pool_passwd
+
 %clean
 rm -rf %{buildroot}
 
 %posttrans
+%create_ghostfile %{_sysconfdir}/%{short_name}/pool_passwd postgres postgres 644
 %_post_service pgpool
 
 %preun
@@ -172,10 +176,15 @@ rm -rf %{buildroot}
 %{_datadir}/%{short_name}/pgpool_remote_start
 %{_datadir}/%{short_name}/replicate_def_pgbench.sql
 %{_datadir}/postgresql/contrib/pgpool-recovery.sql
+%{_datadir}/postgresql/contrib/pgpool-regclass.sql
 %{_initrddir}/pgpool
 %{_libdir}/postgresql/pgpool-recovery.so
+%{_libdir}/postgresql/pgpool-regclass.so
 %attr(700,postgres,postgres) %dir %{_localstatedir}/run/pgpool
+%attr(775,postgres,postgres) %dir %{_localstatedir}/run/postgresql
+%dir %{_sysconfdir}/%{short_name}
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
+%ghost %attr(644,postgres,postgres) %{_sysconfdir}/%{short_name}/pool_passwd
 %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
 
