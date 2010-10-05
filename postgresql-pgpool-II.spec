@@ -20,7 +20,7 @@ Source4:	pgpool-copy-base-backup
 #		form or another when I, or someone else who feels like it gets
 #		around to it.. ;)
 Patch1:		pgpool-II-3.0-pgpool.conf-mdkconf.patch
-Patch2:		pgpool-II-3.0-daemon-stdout-stderr-logging.patch
+Patch2:		pgpool-II-3.0-logfile.patch
 # there's a slight/minimal chance for a race condition through use of waitpid(2),
 # TODO:
 # <jbj> the easiest fix is to create a pipe to serialize the operation of parent <-> child
