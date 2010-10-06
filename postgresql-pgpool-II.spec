@@ -15,6 +15,7 @@ Source1:	pgpool.init
 Source2:	pgpool.sysconfig
 Source3:	pgpool.conf.mirroring
 Source4:	pgpool-copy-base-backup
+Source5:	pgpool-archive_command
 # (proyvind):	These are all patches of mine, briefly described in changelog for
 #		2.3.3-1, eventually they should preferably make their way in some
 #		form or another when I, or someone else who feels like it gets
@@ -88,7 +89,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch6 -p1 -b .socketdir~
 autoreconf -fi
 cp %{SOURCE4} sample/copy-base-backup
-
+cp %{SOURCE5} sample/archive_command
 
 %build
 %configure2_5x	--with-pgsql-includedir=%{_includedir}/pgsql \
@@ -131,7 +132,7 @@ sed -e 's#/usr/local#/usr#g' -i sample/*
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 
-for i in copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
+for i in archive_command copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
 	install -m755 sample/$i %{buildroot}%{_datadir}/%{short_name}/$i
 done
 
