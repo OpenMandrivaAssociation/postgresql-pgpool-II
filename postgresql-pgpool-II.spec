@@ -127,7 +127,7 @@ for i in %{buildroot}/%{_sysconfdir}/%{short_name}/*sample*
 done
 install -m644 %{SOURCE3} -D %{buildroot}%{_sysconfdir}/%{short_name}/pgpool.conf.mirroring
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/pgpool
-install -m644 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
+install -m640 %{SOURCE2} -D %{buildroot}%{_sysconfdir}/sysconfig/pgpool
 sed -e 's#/usr/local#/usr#g' -i sample/*
 install -m644 sample/dist_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
 install -m644 sample/replicate_def_pgbench.sql %{buildroot}%{_datadir}/%{short_name}
@@ -185,7 +185,7 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/%{short_name}
 %config(noreplace) %{_sysconfdir}/%{short_name}/*.conf*
 %ghost %attr(644,postgres,postgres) %{_sysconfdir}/%{short_name}/pool_passwd
-%config(noreplace) %{_sysconfdir}/sysconfig/pgpool
+%attr(640,root,postgres) %config(noreplace) %{_sysconfdir}/sysconfig/pgpool
 %config(noreplace) %{_sysconfdir}/logrotate.d/pgpool
 
 %files -n %{libname}
