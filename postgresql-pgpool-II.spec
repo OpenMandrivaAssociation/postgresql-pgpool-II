@@ -33,6 +33,7 @@ Patch3:		pgpool-II-3.0-verify-child-pid-survival.patch
 Patch4:		pgpool-II-2.3.3-support-libsetproctitle.patch
 Patch5:		pgpool-II-3.0-recovery-script-customizations.patch
 Patch6:		pgpool-II-3.0-custom-unix-socket-dir.patch
+Patch7:		pgpool-II-3.0-fix-segfault-of-child-on-syntax-error-ext_query_prot.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
@@ -88,6 +89,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch4 -p1 -b .setproctitle~
 %patch5 -p1 -b .recovery~
 %patch6 -p1 -b .socketdir~
+%patch7 -p1 -b .syntax_err_segfault~
 autoreconf -fi
 cp %{SOURCE4} sample/copy-base-backup
 cp %{SOURCE5} sample/archive_command
