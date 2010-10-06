@@ -35,6 +35,7 @@ Patch5:		pgpool-II-3.0-recovery-script-customizations.patch
 Patch6:		pgpool-II-3.0-custom-unix-socket-dir.patch
 Patch7:		pgpool-II-3.0-fix-segfault-of-child-on-syntax-error-ext_query_prot.patch
 Patch8:		pgpool-II-3.0-fix-md5-auth-bug.patch
+Patch9:		pgpool-II-3.0-add-md5-username-option.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	postgresql-devel pam-devel openssl-devel
@@ -92,6 +93,7 @@ iconv -f iso-8859-1 -t utf-8 TODO -o TODO
 %patch6 -p1 -b .socketdir~
 %patch7 -p1 -b .syntax_err_segfault~
 %patch8 -p1 -b .md5_auth_bug~
+%patch9 -p1 -b .md5_user_option~
 autoreconf -fi
 cp %{SOURCE4} sample/copy-base-backup
 cp %{SOURCE5} sample/archive_command
