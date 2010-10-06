@@ -166,6 +166,7 @@ rm -rf %{buildroot}
 %{_bindir}/pg_md5
 %{_mandir}/man8/pgpool.8*
 %dir %{_datadir}/%{short_name}
+%{_datadir}/%{short_name}/archive_command
 %{_datadir}/%{short_name}/copy-base-backup
 %{_datadir}/%{short_name}/system_db.sql
 %{_datadir}/%{short_name}/pgpool.pam
