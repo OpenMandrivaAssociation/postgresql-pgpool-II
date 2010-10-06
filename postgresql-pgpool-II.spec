@@ -100,8 +100,7 @@ cp %{SOURCE6} sample/mirroring_failback
 		--with-pam \
 		--with-openssl \
 		--disable-rpath \
-		--sysconfdir=%{_sysconfdir}/%{short_name} \
-		--with-socket-dir=%{_localstatedir}/run/postgresql
+		--sysconfdir=%{_sysconfdir}/%{short_name}
 
 %make
 %make -C sql/pgpool-recovery
