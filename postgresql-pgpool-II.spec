@@ -170,6 +170,7 @@ rm -rf %{buildroot}
 %dir %{_datadir}/%{short_name}
 %{_datadir}/%{short_name}/archive_command
 %{_datadir}/%{short_name}/copy-base-backup
+%{_datadir}/%{short_name}/mirroring_failback
 %{_datadir}/%{short_name}/system_db.sql
 %{_datadir}/%{short_name}/pgpool.pam
 %{_datadir}/%{short_name}/pgpool_recovery_pitr
