@@ -1,0 +1,17 @@
+diff -p -up pgpool-II-2.3.3/configure.in.setproctitle~ pgpool-II-2.3.3/configure.in
+--- pgpool-II-2.3.3/configure.in.setproctitle~	2010-05-30 05:44:15.000000000 +0200
++++ pgpool-II-2.3.3/configure.in	2010-07-15 18:14:23.810539167 +0200
+@@ -61,11 +61,12 @@ AC_CHECK_LIB(gen,      main)
+ AC_CHECK_LIB(PW,       main)
+ AC_CHECK_LIB(resolv,   main)
+ AC_CHECK_LIB(crypt,   main)
++AC_CHECK_LIB(setproctitle,setproctitle)
+ 
+ dnl Checks for header files.
+ AC_HEADER_STDC
+ AC_HEADER_SYS_WAIT
+-AC_CHECK_HEADERS(fcntl.h unistd.h getopt.h netinet/tcp.h netinet/in.h netdb.h sys/param.h sys/types.h sys/socket.h sys/un.h sys/time.h sys/sem.h sys/shm.h sys/select.h crypt.h sys/pstat.h)
++AC_CHECK_HEADERS(fcntl.h unistd.h getopt.h netinet/tcp.h netinet/in.h netdb.h sys/param.h sys/types.h sys/socket.h sys/un.h sys/time.h sys/sem.h sys/shm.h sys/select.h crypt.h sys/pstat.h setproctitle.h)
+ 
+ dnl Checks for typedefs, structures, and compiler characteristics.
+ AC_C_CONST

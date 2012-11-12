@@ -1,0 +1,43 @@
+--- pgpool-II-3.0/sample/pgpool_recovery_pitr.recovery~	2010-08-13 02:28:14.000000000 +0200
++++ pgpool-II-3.0/sample/pgpool_recovery_pitr	2010-10-06 02:07:37.837857439 +0200
+@@ -1,11 +1,18 @@
+ #! /bin/sh
+ # Online recovery 2nd stage script
+ #
+-datadir=$1		# master dabatase cluster
++PGDATA=$1		# master dabatase cluster
+ DEST=$2			# hostname of the DB node to be recovered
+ DESTDIR=$3		# database cluster of the DB node to be recovered
++PGSQL_HOME="$(dirname $PGDATA)"
+ port=5432		# PostgreSQL port number
+-archdir=/data/archive_log	# archive log directory
++archdir="$PGSQL_HOME/archive"	# archive log directory
++
++ARCHIVING_LOCK="${PGDATA}/archiving_enabled"
++if [ ! -f "$ARCHIVING_LOCK" ]; then
++    echo No "$ARCHIVING_LOCK", giving up
++    exit 1
++fi
+ 
+ # Force to flush current value of sequences to xlog 
+ psql -p $port -t -c 'SELECT datname FROM pg_database WHERE NOT datistemplate AND datallowconn' template1|
+@@ -17,3 +24,5 @@ do
+ done
+ 
+ psql -p $port -c "SELECT pgpool_switch_xlog('$archdir')" template1
++
++rm -f ${ARCHIVING_LOCK}
+--- pgpool-II-3.0/sample/pgpool_remote_start.recovery~	2007-06-27 11:04:43.000000000 +0200
++++ pgpool-II-3.0/sample/pgpool_remote_start	2010-10-06 02:08:53.130426854 +0200
+@@ -8,6 +8,9 @@ fi
+ 
+ DEST=$1
+ DESTDIR=$2
+-PGCTL=/usr/local/pgsql/bin/pg_ctl
++PGCTL=/usr/bin/pg_ctl
+ 
+-ssh -T $DEST $PGCTL -w -D $DESTDIR start 2>/dev/null 1>/dev/null < /dev/null &
++ssh -x -T $DEST "test -r /etc/sysconfig/postgresql && . /etc/sysconfig/postgresql; \
++	$PGCTL -D $DESTDIR status && $PGCTL -w -D $DESTDIR stop -m immediate; \
++	tar -C $DESTDIR -zxf $DESTDIR/data.tar.gz && \
++	$PGCTL -w -D $DESTDIR start -l /var/log/postgres/postgresql \$PGOPTIONS"

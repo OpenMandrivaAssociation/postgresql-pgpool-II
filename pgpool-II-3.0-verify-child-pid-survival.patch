@@ -1,0 +1,34 @@
+diff -p -up pgpool-II-3.0/main.c.verify_child_pid~ pgpool-II-3.0/main.c
+--- pgpool-II-3.0/main.c.verify_child_pid~	2010-09-15 12:53:00.713626463 +0200
++++ pgpool-II-3.0/main.c	2010-09-15 12:54:01.550470540 +0200
+@@ -730,6 +730,8 @@ static void daemonize(void)
+ 	pid_t		pid;
+ 	int			fdlimit;
+     int         rc_chdir;
++	int		pstatus = 0;
++
+ 
+ 	pid = fork();
+ 	if (pid == (pid_t) -1)
+@@ -741,8 +743,19 @@ static void daemonize(void)
+ 	}
+ 	else if (pid > 0)
+ 	{			/* parent */
+-		pool_shmem_exit(0);
+-		exit(0);
++	    	/* Just wait a short while to see if we succeed getting child
++		 * processes actually up and running once started, otherwise
++		 * we'll return with a success exit code even though the child
++		 * dies and exits with failure code. If child has died during
++		 * the short while we were waiting for it, we'll return with
++		 * it's exit code in stead, otherwise return with the default
++		 * success code.
++		 */
++		usleep(100000);
++		waitpid(pid, &pstatus, WNOHANG);
++		pstatus=WEXITSTATUS(pstatus);
++		pool_shmem_exit(pstatus);
++		exit(pstatus);
+ 	}
+ 
+ #ifdef HAVE_SETSID

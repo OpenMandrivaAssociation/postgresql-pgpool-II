@@ -1,0 +1,45 @@
+diff -p -up pgpool-II-3.0/configure.in.socketspath~ pgpool-II-3.0/configure.in
+--- pgpool-II-3.0/configure.in.socketspath~	2010-09-15 12:13:27.688840411 +0200
++++ pgpool-II-3.0/configure.in	2010-09-15 12:13:11.774142794 +0200
+@@ -308,6 +308,12 @@ if test "$with_pam" = yes ; then
+                                       [AC_MSG_ERROR([header file <security/pam_appl.h> or <pam/pam_appl.h> is required for PAM.])])])
+ fi
+ 
++AC_ARG_WITH(
++    [socket-dir],
++    AS_HELP_STRING([--with-socket-dir=ARG], [unix socket dir default=[/tmp]]),
++    [AC_DEFINE_UNQUOTED([UNIX_SOCKET_DIR], ["$withval"], [Define to use different unix sockets path than '/tmp'])]
++)
++
+ OLD_LDFLAGS="$LDFLAGS"
+ LDFLAGS="-L$PGSQL_LIB_DIR"
+ OLD_LIBS="$LIBS"
+diff -p -up pgpool-II-3.0/pcp/pcp_stream.h.socketspath~ pgpool-II-3.0/pcp/pcp_stream.h
+--- pgpool-II-3.0/pcp/pcp_stream.h.socketspath~	2010-09-15 12:14:20.536836280 +0200
++++ pgpool-II-3.0/pcp/pcp_stream.h	2010-09-15 12:16:38.645212173 +0200
+@@ -47,6 +47,10 @@ extern int pcp_read(PCP_CONNECTION *pc,
+ extern int pcp_write(PCP_CONNECTION *pc, void *buf, int len);
+ extern int pcp_flush(PCP_CONNECTION *pc);
+ 
++#ifdef UNIX_SOCKET_DIR
++#define UNIX_DOMAIN_PATH UNIX_SOCKET_DIR
++#else
+ #define UNIX_DOMAIN_PATH "/tmp"
++#endif
+ 
+ #endif /* PCP_STREAM_H */
+diff -p -up pgpool-II-3.0/pool.h.socketspath~ pgpool-II-3.0/pool.h
+--- pgpool-II-3.0/pool.h.socketspath~	2010-09-15 12:13:43.915532096 +0200
++++ pgpool-II-3.0/pool.h	2010-09-15 12:15:46.794197357 +0200
+@@ -61,7 +61,11 @@
+ #define DEFAULT_LOGDIR "/tmp"
+ 
+ /* Unix domain socket directory */
++#ifdef UNIX_SOCKET_DIR
++#define DEFAULT_SOCKET_DIR UNIX_SOCKET_DIR
++#else
+ #define DEFAULT_SOCKET_DIR "/tmp"
++#endif
+ 
+ /* pid file name */
+ #define DEFAULT_PID_FILE_NAME "/var/run/pgpool/pgpool.pid"

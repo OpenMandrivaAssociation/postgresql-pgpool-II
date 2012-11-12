@@ -1,0 +1,71 @@
+diff --git a/main.c b/main.c
+index 431c660..fbfa626 100644
+--- a/main.c
++++ b/main.c
+@@ -141,6 +141,7 @@ static int pcp_inet_fd; /* inet domain socket fd for PCP */
+ static char pcp_conf_file[POOLMAXPATHLEN+1]; /* path for pcp.conf */
+ static char conf_file[POOLMAXPATHLEN+1];
+ static char hba_file[POOLMAXPATHLEN+1];
++static char log_file[POOLMAXPATHLEN+1]; /* redirection file of stdout/stderr when running as daemon */
+ 
+ static int exiting = 0;		/* non 0 if I'm exiting */
+ static int switching = 0;		/* non 0 if I'm fail overing or degenerating */
+@@ -194,6 +195,7 @@ int main(int argc, char **argv)
+ 		{"config-file", required_argument, NULL, 'f'},
+ 		{"pcp-file", required_argument, NULL, 'F'},
+ 		{"help", no_argument, NULL, 'h'},
++		{"log", required_argument, NULL, 'l'},		
+ 		{"mode", required_argument, NULL, 'm'},
+ 		{"dont-detach", no_argument, NULL, 'n'},
+ 		{"discard-status", no_argument, NULL, 'D'},
+@@ -207,8 +209,10 @@ int main(int argc, char **argv)
+ 	snprintf(conf_file, sizeof(conf_file), "%s/%s", DEFAULT_CONFIGDIR, POOL_CONF_FILE_NAME);
+ 	snprintf(pcp_conf_file, sizeof(pcp_conf_file), "%s/%s", DEFAULT_CONFIGDIR, PCP_PASSWD_FILE_NAME);
+ 	snprintf(hba_file, sizeof(hba_file), "%s/%s", DEFAULT_CONFIGDIR, HBA_CONF_FILE_NAME);
++	snprintf(log_file, sizeof(log_file), "%s", DEFAULT_LOG_FILE);
+ 
+-    while ((opt = getopt_long(argc, argv, "a:cdf:F:hm:nDv", long_options, &optindex)) != -1)
++
++    while ((opt = getopt_long(argc, argv, "a:cdf:F:hl:m:nDv", long_options, &optindex)) != -1)
+ 	{
+ 		switch (opt)
+ 		{
+@@ -252,6 +256,15 @@ int main(int argc, char **argv)
+ 				exit(0);
+ 				break;
+ 
++			case 'l':   /* specify log file */
++				if (!optarg)
++				{
++					usage();
++					exit(1);
++				}
++				strncpy(log_file, optarg, sizeof(log_file));
++				break;
++
+ 			case 'm':	/* stop mode */
+ 				if (!optarg)
+ 				{
+@@ -758,7 +771,7 @@ static void daemonize(void)
+ 
+ 	rc_chdir = chdir("/");
+ 
+-	i = open("/dev/null", O_RDWR);
++	i = open(log_file, O_RDWR|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR);
+ 	dup2(i, 0);
+ 	dup2(i, 1);
+ 	dup2(i, 2);
+diff --git a/pool.h b/pool.h
+index 9716c02..3aafc75 100644
+--- a/pool.h
++++ b/pool.h
+@@ -66,6 +66,9 @@
+ /* pid file name */
+ #define DEFAULT_PID_FILE_NAME "/var/run/pgpool/pgpool.pid"
+ 
++/* daemon log file */
++#define DEFAULT_LOG_FILE "/dev/null"
++
+ /* status file name */
+ #define STATUS_FILE_NAME "pgpool_status"
+ 
