@@ -1,0 +1,23 @@
+# Options for pgpool
+
+# Some described here:
+# -d: debug mode. lots of debug information will be printed
+# -n: Don't run in daemon mode, run in foreground
+# Refer to 'pgpool --help' & pgpool(8) for full list of options and descriptions
+
+#PGPOOLOPTS="-d"
+
+# Use alternate configuration file
+#PGPOOLCONF="/etc/pgpool-II/pgpool.conf.master-slave"
+#PGPOOLCONF="/etc/pgpool-II/pgpool.conf.replication"
+#PGPOOLCONF="/etc/pgpool-II/pgpool.conf.mirroring"
+
+# These are only used with the 'extendedstatus' action, but for the pcp_*
+# tools to work, you need to provide a proper password, since it doesn't seem
+# to use HBA settings for authentication...
+#PCP_PORT=9898
+#PCP_USER=pgpool
+#PCP_PASS=recovery
+#PCP_TIMEOUT=10
+#PCP_HOSTNAME='' # local unix sockets
+

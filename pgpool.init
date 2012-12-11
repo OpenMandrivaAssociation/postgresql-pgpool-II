@@ -1,0 +1,285 @@
+#!/bin/sh
+# Author: Per Øyvind Karlsen <peroyvind@mandriva.org>
+# 	  (c) 2010 - Linus AS (http://www.linus.no)
+# Inspired by Fedora init script by Devrim GUNDUZ <devrim@CommandPrompt.com>
+#
+# chkconfig:      345 95 33
+# pidfile:        /var/run/pgpool/pgpool.pid
+
+### BEGIN INIT INFO
+# Provides:       pgpool
+# Required-Start: $local_fs $network
+# Required-Stop:  $local_fs $network
+# Default-Start:        3 4 5
+# Default-Stop:   0 1 2       6
+# Short-Description: PostgreSQL pgpool-II daemon
+# Description:    pgpool-II is a connection pooling/replication server for PostgreSQL.
+### END INIT INFO
+
+. /etc/init.d/functions
+
+# Get config.
+. /etc/sysconfig/network
+
+PGDATA=/var/lib/pgsql/data
+
+if [ -r /etc/sysconfig/postgresl ]; then
+    . /etc/sysconfig/postgresql
+fi
+
+# Set defaults for configuration variables
+PGPOOLDAEMON=/usr/bin/pgpool
+PGPOOLCONF=/etc/pgpool-II/pgpool.conf
+PGPOOLDATA=/usr/share/pgpool-II
+
+PGDBUSER=pgpool
+PGDBNAME=pgpool
+NAME=pgpool-II
+BASEBIN="$(basename $PGPOOLDAEMON)"
+LOCK_FILE="/var/lock/subsys/${BASEBIN}"
+PID_FILE="/var/run/pgpool/${BASEBIN}.pid"
+LOG_FILE="/var/log/postgres/pgpool"
+
+STOP_MODE="fast"
+
+PCP_PORT=9898
+PCP_USER=pgpool
+PCP_PASS=recovery
+PCP_TIMEOUT=10
+PCP_HOSTNAME='' # local unix sockets
+
+if [ -r /etc/sysconfig/pgpool ]; then
+    . /etc/sysconfig/pgpool
+fi
+
+if [ ! -x "$PGPOOLDAEMON" ]; then
+	[ "$1" = "stop" ] && exit 0
+	gprintf "%s needs to exist and be executable\n" "$PGPOOLDAEMON"
+	exit 5
+fi
+
+# Check whether the config file exists or not
+if [ ! -r "$PGPOOLCONF" ]; then
+	[ "$1" = "stop" ] && exit 0
+	gprintf "%s needs to exist and be readable\n" "$PGPOOLCONF"
+	exit 6
+fi
+
+RETVAL=0
+
+init(){
+	gprintf "Checking for postgresql '%s' user: " ${PGDBUSER}
+	psql -U ${PGDBUSER} postgres -c ''&> /dev/null
+	RETVAL=$?
+	if [[ "$RETVAL" = 0 ]]; then
+		success
+	elif [[ "$RETVAL" = 1 ]]; then
+		gprintf "'Postgresql user '%s' already exists, but unable to access" ${PGDBUSER}
+		failed
+	elif [[ "$RETVAL" = 2 ]]; then
+		gprintf "creating%s" "..."
+		createuser -U postgres --superuser --no-createdb --no-password ${PGDBUSER} &> /dev/null && passed
+		[[ ! $? ]] && failure
+	else
+		success
+	fi
+	echo
+
+	gprintf "Checking for postgresql '%s' database: " ${PGDBUSER}
+	psql -U ${PGDBUSER} ${PGDBNAME} -c '' &> /dev/null 
+	RETVAL=$?
+	if [[ "$RETVAL" = 0 ]]; then
+		success
+		echo
+	elif [[ "$RETVAL" = 1 ]]; then
+		gprintf "'%s' %s already exists, but unable to access it" "${PGDBNAME}" "database" && warning
+		[[ ! $? ]] && failure
+		echo
+	elif [[ "$RETVAL" = 2 ]]; then
+		gprintf "preparing%s" "..."
+		echo
+		gprintf "Installing %s '%s': %s" "${NAME}" "recovery tunction" "..."
+		psql -U postgres template1 -f /usr/share/postgresql/contrib/pgpool-recovery.sql &> /dev/null && passed
+		[[ ! $? ]] && failure
+		echo
+		gprintf "Installing %s '%s': %s" "${NAME}" "regclass tunction" "..."
+		psql -U postgres template1 -f /usr/share/postgresql/contrib/pgpool-regclass.sql &> /dev/null && passed
+		[[ ! $? ]] && failure
+		echo
+		gprintf "Initializing '%s' %s: %s" "pgpool_lock_table" "lobj_lock_table table" "..."
+		psql -U postgres template1 -c 'CREATE TABLE public.pgpool_lock_table (); GRANT ALL ON public.pgpool_lock_table TO PUBLIC;' &> /dev/null && passed
+		[[ ! $? ]] && failure
+		echo
+		gprintf "Creating '%s' %s: %s" "${PGDBNAME}" "database" "..."
+		createdb -U ${PGDBUSER} -O ${PGDBUSER} ${PGDBNAME} -T template1 && passed
+		[[ ! $? ]] && failure
+		echo
+		gprintf "Installing postgresql '%s' database function: %s" "dblink" "..."
+		psql -U ${PGDBUSER} -f /usr/share/postgresql/contrib/dblink.sql &> /dev/null && passed
+		[[ ! $? ]] && failure
+		echo
+		gprintf "Initializing '%s': %s" "${NAME} system db" "..."
+		psql -U ${PGDBUSER} -f /usr/share/pgpool-II/system_db.sql ${PGDBNAME} &> /dev/null && passed
+		[[ ! $? ]] && failure
+		echo
+	else
+		success
+	fi
+	for i in archive_command copy-base-backup pgpool_recovery pgpool_recovery_pitr pgpool_remote_start; do
+		[ ! -e ${PGDATA}/${i} ] && su postgres -c "ln -s ${PGPOOLDATA}/${i} ${PGDATA}/${i}"
+	done
+}
+
+uninstall() {
+	rh_status_q && stop
+	psql -U ${PGDBUSER} ${PGDBNAME} -f /usr/share/postgresql/contrib/uninstall_dblink.sql &> /dev/null
+	psql -U postgres postgres -c 'DROP FUNCTION pgpool_recovery (text, text, text);' &> /dev/null
+	psql -U postgres postgres -c 'DROP FUNCTION pgpool_remote_start (text, text);' &> /dev/null
+	psql -U postgres postgres -c 'DROP FUNCTION pgpool_switch_xlog (text, text);' &> /dev/null
+	psql -U postgres postgres -c 'DROP FUNCTION pgpool_regclass (text, text);' &> /dev/null
+	psql -U postgres postgres -c 'DROP TABLE public.pgpool_lock_table;' &> /dev/null
+
+	dropdb -U ${PGDBUSER} ${PGDBNAME}
+	dropuser -U postgres ${PGDBUSER}
+}
+
+start(){
+	service postgresql status &> /dev/null && init
+	gprintf "Starting %s service: " "${NAME}"
+	daemon --check ${PGPOOLDAEMON} --pidfile ${PID_FILE} --user postgres "${PGPOOLDAEMON} -f ${PGPOOLCONF} -l ${LOG_FILE} ${CLEAR_CACHE} ${PGPOOLOPTS}"
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch $LOCK_FILE
+	return $RETVAL
+}
+
+stop(){
+	gprintf "Shutting down %s service: " "${NAME}"
+	daemon --user postgres "${PGPOOLDAEMON} -m ${STOP_MODE} stop 2> /dev/null"
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f $LOCK_FILE
+	return $RETVAL
+}
+
+reload(){
+	gprintf "Reloading %s: " "${NAME}"
+	rh_status_q
+
+	if [ $RETVAL -eq 0 ]; then
+		$PGPOOLDAEMON reload
+		RETVAL=$?
+	else
+		rh_status
+	fi
+	if [ $RETVAL -eq 0 ]; then
+		success
+	else
+		failure
+	fi
+	echo
+	return $RETVAL
+}
+
+rh_status() {
+	status -p $PID_FILE $PGPOOLDAEMON
+	RETVAL=$?
+	return $RETVAL
+}
+
+rh_status_q() {
+	rh_status >/dev/null 2>&1
+	return $?
+}
+
+extendedstatus() {
+	rh_status || exit 0
+	echo
+	NODE_COUNT=$(pcp_node_count "${PCP_TIMEOUT}" "${PCP_HOSTNAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}")
+	gprintf "Total node count:\t %s\n" $NODE_COUNT
+	echo
+	gprintf "Host\t\t\t\t Status\t Load Balance Weight\n"
+	for i in $(seq 0 $(($NODE_COUNT-1))); do
+		NODES_INFO=$(pcp_node_info "${PCP_TIMEOUT}" "${PCP_HOSTNAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}" $i)
+		[ "${NODES_INFO:0:1}" = " " ] && SOCKET="unix-socket"
+		gprintf "%s:%s\t\t %s\t %s\n" $SOCKET $NODES_INFO
+		unset SOCKET
+	done
+	echo
+	gprintf "Active child process states:\n"
+	gprintf "PID\t Database\t User\t Started\t Created\t Version\t Connection-reuse counter\n"
+	IDLE_PROCS=""
+	for i in $(pcp_proc_count "${PCP_TIMEOUT}" "${PCP_HOSTNAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}"); do
+		PROC_INFO=$(pcp_proc_info "${PCP_TIMEOUT}" "${PCP_HOSTNAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}" "$i")
+		if [ "$(echo $PROC_INFO |wc -c)" -eq 1 ]; then
+			IDLE_PROCS="${IDLE_PROCS}$i "
+		else
+			gprintf "%s:\t %s\t\t %s\t %s\t %s\t %s.%s\t\t %s\n" $i $PROC_INFO
+		fi
+	done
+	echo
+	gprintf "Idle child processes:\n%s\n" "$IDLE_PROCS"
+	echo
+	rh_status_q
+}
+
+ACTION="$1"
+
+while [ "$#" -ne 0 ]; do
+	shift
+	case "$1" in
+	  clear|clear-cache)
+		CLEAR_CACHE="-c"
+		;;
+	  smart|fast|immediate)
+		STOP_MODE="$1"
+		;;
+	esac
+done
+
+# See how we were called.
+case "$ACTION" in
+  start)
+	rh_status_q && exit 0
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	rh_status
+	;;
+  extendedstatus)
+	extendedstatus
+	;;
+  restart)
+	stop
+	start
+	;;
+  reload|force-reload)
+	reload
+	;;
+  condrestart|try-restart)
+	rh_status_q || exit 0  
+	stop
+	start
+	;;
+  condstop)
+	rh_status_q || exit 0  
+	stop
+	;;
+  init)
+	init
+	;;
+  uninstall)
+	uninstall
+	;;
+  *)
+	gprintf "Usage: %s {start|status|extendedstatus|restart|condrestart|condstop|reload|force-reload}\n" $0
+	gprintf "Stop:  %s {stop|restart|condrestart|condstop} [smart|fast|immediate]\n" $0
+	gprintf "Start: %s {start|restart|condrestart} [clear-cache]\n" $0
+	RETVAL=2
+	;;
+esac
+
+exit $RETVAL

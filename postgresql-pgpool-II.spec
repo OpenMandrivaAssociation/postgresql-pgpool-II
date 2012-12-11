@@ -6,7 +6,7 @@
 Summary:	Pgpool is a connection pooling/replication server for PostgreSQL
 Name:		postgresql-%{short_name}
 Version:	3.0
-Release:	%mkrel 1
+Release:	2
 License:	BSD
 Group:		Databases
 URL:		http://pgpool.projects.PostgreSQL.org
@@ -113,7 +113,6 @@ cp %{SOURCE6} sample/mirroring_failback
 %make -C sql/pgpool-regclass
 
 %install
-rm -rf %{buildroot}
 %makeinstall_std
 %makeinstall_std -C sql/pgpool-recovery
 %makeinstall_std -C sql/pgpool-regclass
@@ -144,9 +143,6 @@ for i in archive_command copy-base-backup mirroring_failback pgpool_recovery pgp
 done
 
 touch %{buildroot}%{_sysconfdir}/%{short_name}/pool_passwd
-
-%clean
-rm -rf %{buildroot}
 
 %posttrans
 %create_ghostfile %{_sysconfdir}/%{short_name}/pool_passwd postgres postgres 644
@@ -205,5 +201,4 @@ rm -rf %{buildroot}
 %{_includedir}/pcp.h
 %{_includedir}/pool_type.h
 %{_libdir}/libpcp.so
-%{_libdir}/libpcp.la
 

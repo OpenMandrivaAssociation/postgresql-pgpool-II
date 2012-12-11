@@ -1,0 +1,32 @@
+#!/bin/bash
+# This script will try connect to other pgpool servers when recovery of a node
+# has been succesful and reattach it to them as well.
+# Not tested with more than two nodes, beware of potential deadlocks with more...
+NODE_ID="$1"
+HOST_NAME="$2"
+PORT="$3"
+DB_PATH="$4"
+NEW_MASTER_ID="$5"
+OLD_MASTER_ID="$6"
+
+PCP_PORT=9898
+PCP_USER=pgpool
+PCP_PASS=recovery
+PCP_TIMEOUT=10
+PCP_HOSTNAME='' # local unix socket
+
+[ -r /etc/sysconfig/pgpool ] && . /etc/sysconfig/pgpool
+
+NODES=$(pcp_node_count -d "${PCP_TIMEOUT}" "${HOST_NAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}")
+
+# We assume node id for the host to be the same on all hosts, and reattach it on all hosts
+for ((i=0; i < NODES; i++))
+do
+    # Assume that we're the master node and skip connecting to, otherwise we seem to create a deadlock..?
+    [ "$i" = "${NEW_MASTER_ID}" ] && continue
+    NODE_INFO=$(pcp_node_info "${PCP_TIMEOUT}" "${HOST_NAME}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}" "${i}")
+    NODE=$(echo $NODE_INFO|cut -d\  -f1)
+    [ "$NODE" = "${PCP_HOSTNAME}" ] && continue
+    pcp_attach_node "${PCP_TIMEOUT}" "${NODE}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}" "${NEW_MASTER_NODE}"
+    pcp_attach_node "${PCP_TIMEOUT}" "${NODE}" "${PCP_PORT}" "${PCP_USER}" "${PCP_PASS}" "${NODE_ID}"
+done

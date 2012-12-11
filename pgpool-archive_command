@@ -1,0 +1,15 @@
+#!/bin/sh
+
+ARCHIVING_LOCK="archiving_enabled"
+BACKUP_LOCK="backup_in_progress"
+DEST="../archive/$2"
+RETVAL=0
+if [ -f "$ARCHIVING_LOCK" -o ! -f "$BACKUP_LOCK" ]; then
+    touch "$BACKUP_LOCK"
+    if [ ! -f "$DEST" ]; then
+	install -m600 "$1" -D "$DEST"
+	RETVAL=$?
+    fi
+    rm -f "$BACKUP_LOCK"
+fi
+exit $RETVAL

@@ -1,8 +1,2 @@
 sources:
-  "pgpool-archive_command:"	7862c8880f7066eea59a84104af51cf584142b05
-  "pgpool.conf.mirroring:"	0c7df0abe7da450b52af0753e9f851d5ca56cd0a
-  "pgpool-copy-base-backup:"	73117321a7adda665f3bb01531714523e2c31cf1
-  "pgpool-II-3.0.tar.gz:"	4c3e950e843de81494dc959b4c6711d2581978df
-  "pgpool.init:"	f534dd0d96cb8b00203d7bb0b68259136df2d0b3
-  "pgpool-mirroring_failback:"	db52057921103a5a8c3f7ba39251c3982d69aacc
-  "pgpool.sysconfig:"	00817afac23de8a0138aac423a48ecc6b41545ff
+  "pgpool-II-3.0.tar.gz": 4c3e950e843de81494dc959b4c6711d2581978df

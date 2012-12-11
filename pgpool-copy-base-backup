@@ -1,0 +1,20 @@
+#! /bin/sh
+PGDATA=$1
+RECOVERY_TARGET=$2
+RECOVERY_DATA=$3
+PGCTL=/usr/bin/pg_ctl
+PGSQL_HOME="$(dirname $PGDATA)"
+ARCHIVING_LOCK="${PGDATA}/archiving_enabled"
+
+rm -rf ${PGSQL_HOME}/archive
+touch "${ARCHIVING_LOCK}"
+psql -c "select pg_start_backup('pgpool-recovery')" postgres
+RETVAL=$?
+[ $RETVAL -ne 0 ] && echo exiting with $RETVAL && rm -f "${ARCHIVING_LOCK}" && exit $RETVAL
+tee ${PGDATA}/recovery.conf << EOH
+restore_command = 'scp ${HOSTNAME}:${PGSQL_HOME}/archive/%f %p'
+EOH
+tar -C ${PGDATA} -zcf ${PGDATA}/data.tar.gz global base pg_multixact pg_subtrans pg_clog pg_xlog pg_twophase pg_tblspc recovery.conf
+psql -c 'select pg_stop_backup()' postgres
+scp ${PGDATA}/data.tar.gz ${RECOVERY_TARGET}:${RECOVERY_DATA}
+rm -f ${PGDATA}/data.tar.gz ${PGDATA}/recovery.conf
