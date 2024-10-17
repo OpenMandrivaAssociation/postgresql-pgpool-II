@@ -9,7 +9,7 @@ Version:	3.0
 Release:	3
 License:	BSD
 Group:		Databases
-URL:		http://pgpool.projects.PostgreSQL.org
+URL:		https://pgpool.projects.PostgreSQL.org
 Source0:	http://pgfoundry.org/frs/download.php/2506/%{short_name}-%{version}.tar.gz
 Source1:	pgpool.init
 Source2:	pgpool.sysconfig
