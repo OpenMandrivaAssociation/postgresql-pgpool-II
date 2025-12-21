@@ -38,6 +38,11 @@ Patch8:		pgpool-II-3.0-fix-md5-auth-bug.patch
 Patch9:		pgpool-II-3.0-add-md5-username-option.patch
 Requires(post,preun):	rpm-helper
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	postgresql-devel pam-devel openssl-devel
 BuildRequires:	setproctitle-devel
 Suggests:	postgresql-server postgresql-contrib-virtual
